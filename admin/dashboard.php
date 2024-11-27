@@ -52,11 +52,7 @@ $total_comments = $select_comments->rowCount();
 
    <div class="box-container">
 
-      <div class="box">
-         <h3>welcome!</h3>
-         <p><?= $fetch_profile['fname']; ?></p>
-         <a href="profile.php" class="btn">view profile</a>
-      </div>
+    
 
       <div class="box">
          <h3><?= $total_contents; ?></h3>
@@ -82,14 +78,7 @@ $total_comments = $select_comments->rowCount();
          <a href="comments.php" class="btn">view activities</a>
       </div>
 
-      <div class="box">
-         <h3>quick select</h3>
-         <p>login or register</p>
-         <div class="flex-btn">
-            <a href="login.php" class="option-btn">login</a>
-            <a href="register.php" class="option-btn">register</a>
-         </div>
-      </div>
+      
 
    </div>
 
