@@ -16,56 +16,16 @@ if (isset($_GET['get_id'])) {
     header('location:view_playlist.php');
 }
 
-// Handle activity file download
-if (isset($_GET['download_activity'])) {
-    $file_path = '../uploaded_files/' . $_GET['download_activity'];
-    if (file_exists($file_path)) {
-        header('Content-Description: File Transfer');
-        header('Content-Type: application/octet-stream');
-        header('Content-Disposition: attachment; filename="' . basename($file_path) . '"');
-        header('Expires: 0');
-        header('Cache-Control: must-revalidate');
-        header('Pragma: public');
-        header('Content-Length: ' . filesize($file_path));
-        readfile($file_path);
-        exit;
-    } else {
-        $message[] = 'File not found!';
-    }
+// Handle grading submission
+if (isset($_POST['grade_submission'])) {
+    $submission_id = $_POST['submission_id'];
+    $grade = $_POST['grade'];
+
+    $update_grade = $conn->prepare("UPDATE student_progress SET submission_status = ? WHERE id = ?");
+    $update_grade->execute([$grade, $submission_id]);
+
+    $message[] = 'Grade updated successfully!';
 }
-
-// Handle student activity upload
-if (isset($_POST['submit_activity'])) {
-    $content_id = $_POST['content_id'];
-    $student_id = $_COOKIE['student_id']; // Assuming student ID is stored in a cookie
-    $uploaded_file = $_FILES['student_activity']['name'];
-    $uploaded_file = filter_var($uploaded_file, FILTER_SANITIZE_STRING);
-    $file_ext = pathinfo($uploaded_file, PATHINFO_EXTENSION);
-    $rename_file = unique_id() . '.' . $file_ext;
-    $file_tmp_name = $_FILES['student_activity']['tmp_name'];
-    $file_folder = '../uploaded_files/student_uploads/' . $rename_file;
-
-    if ($file_ext != 'pdf') {
-        $message[] = 'Invalid file type! Only PDFs are allowed.';
-    } else {
-        move_uploaded_file($file_tmp_name, $file_folder);
-
-        // Insert activity submission record into the database
-        $check_progress = $conn->prepare("SELECT * FROM student_progress WHERE student_id = ? AND lesson_id = ?");
-        $check_progress->execute([$student_id, $content_id]);
-
-        if ($check_progress->rowCount() > 0) {
-            $update_progress = $conn->prepare("UPDATE student_progress SET activity_completed = 1 WHERE student_id = ? AND lesson_id = ?");
-            $update_progress->execute([$student_id, $content_id]);
-        } else {
-            $insert_progress = $conn->prepare("INSERT INTO student_progress (student_id, lesson_id, activity_completed) VALUES (?, ?, 1)");
-            $insert_progress->execute([$student_id, $content_id]);
-        }
-
-        $message[] = 'Activity submitted successfully!';
-    }
-}
-
 
 ?>
 
@@ -89,6 +49,15 @@ if (isset($_POST['submit_activity'])) {
             height: 500px;
             border: none;
         }
+        .submissions-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .submissions-table th, .submissions-table td {
+            border: 1px solid #ddd;
+            padding: 10px;
+            text-align: left;
+        }
     </style>
 </head>
 <body>
@@ -111,7 +80,6 @@ if (isset($_POST['submit_activity'])) {
 
         <div class="container">
             <div class="box">
-               
                 <h3 class="titlee"><?= htmlspecialchars($title); ?></h3>
                 <p class="title"><?= htmlspecialchars($description); ?></p>
 
@@ -125,35 +93,72 @@ if (isset($_POST['submit_activity'])) {
                 } else {
                     echo '<p class="error">PDF file not found.</p>';
                 }
-
-                // Activity Download
-                if (!empty($activity)) {
-                    ?>
-                    <p class="titleact">Download Activity:</p>
-                    <a href="view_content.php?download_activity=<?= htmlspecialchars($activity); ?>" class="btn">Download Activity</a>
-                    <?php
-                }
                 ?>
             </div>
 
+            <!-- Student Submissions Section -->
             <div class="box">
-                <p class="titleact">Submit Your Activity</p>
-                <form action="" method="post" enctype="multipart/form-data">
-                    <input type="hidden" name="content_id" value="<?= $get_id; ?>">
-                    <p class="title">Upload Your Completed Activity (PDF Only)</p>
-                    <input type="file" name="student_activity" accept="application/pdf" required class="box" class="pdfup">
-            </div>
-            <div class="box">
-                    <input type="submit" name="submit_activity" value="Submit Activity" class="inline-btn">
-                </form>
-                <form action="" method="post">
-                <input type="hidden" name="lesson_id" value="<?= $get_id; ?>" class="inline-btn">
-                <input type="submit" name="complete_lesson" value="Mark Lesson as Completed" class="inline-btn">
-                </form>
-            </div> 
-            </div>
+                <br>
+                <br>
+                <h3 class="titlee">Submitted Activities</h3>
+                <?php
+                $select_submissions = $conn->prepare("SELECT sp.*, s.fname AS fname 
+                                                      FROM student_progress sp 
+                                                      JOIN users s ON sp.student_id = s.id 
+                                                      WHERE sp.lesson_id = ?");
+                $select_submissions->execute([$get_id]);
 
-
+                if ($select_submissions->rowCount() > 0) {
+                    ?>
+                    <table class="submissions-table">
+                        <thead>
+                            <tr>
+                                <th>Student Name</th>
+                                <th>Submitted File</th>
+                                <th>Status</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php
+                            while ($submission = $select_submissions->fetch(PDO::FETCH_ASSOC)) {
+                                $submission_id = $submission['id'];
+                                $student_name = $submission['student_name'];
+                                $file = $submission['uploaded_file'];
+                                $status = $submission['submission_status'];
+                                ?>
+                                <tr>
+                                    <td><?= htmlspecialchars($student_name); ?></td>
+                                    <td>
+                                        <a href="../uploaded_files/student_uploads/<?= htmlspecialchars($file); ?>" download>
+                                            <?= htmlspecialchars($file); ?>
+                                        </a>
+                                    </td>
+                                    <td><?= htmlspecialchars(ucfirst($status)); ?></td>
+                                    <td>
+                                        <form action="" method="post">
+                                            <input type="hidden" name="submission_id" value="<?= $submission_id; ?>">
+                                            <select name="grade" required>
+                                                <option value="pending" <?= $status == 'pending' ? 'selected' : ''; ?>>Pending</option>
+                                                <option value="passed" <?= $status == 'passed' ? 'selected' : ''; ?>>Passed</option>
+                                                <option value="failed" <?= $status == 'failed' ? 'selected' : ''; ?>>Failed</option>
+                                            </select>
+                                            <button type="submit" name="grade_submission" class="btn">Update</button>
+                                        </form>
+                                    </td>
+                                </tr>
+                                <?php
+                            }
+                            ?>
+                        </tbody>
+                    </table>
+                    <?php
+                } else {
+                    echo '<p class="empty">No submissions found!</p>';
+                }
+                ?>
+            </div>
+        </div>
         <?php
     } else {
         echo '<p class="empty">No content found!</p>';

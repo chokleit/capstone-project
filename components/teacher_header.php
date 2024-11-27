@@ -98,6 +98,7 @@ if(isset($message)){
       <a href="batch.php"><i class="fas fa-graduation-cap"></i><span>Batch</span></a>
       <a href="playlists.php"><i class="fa-solid fa-bars-staggered"></i><span>Courses</span></a>
       <a href="students.php"><i class="fa-solid fa-school"></i><span>Student List</span></a>
+      <a href="activity.php"><i class="fa-solid fa-school"></i><span>Activities</span></a>
       <a href="studentrecords.php"><i class="fa-solid fa-school"></i><span>Records</span></a>
       <a href="comments.php"><i class="fas fa-comment"></i><span>Comments</span></a>
       <a href="../components/teacher_logout.php" onclick="return confirm('logout from this website?');"><i class="fas fa-right-from-bracket"></i><span>logout</span></a>
