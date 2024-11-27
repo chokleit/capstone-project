@@ -46,8 +46,8 @@ if(isset($_COOKIE['tutor_id'])){
 
 
       <?php
-         $select_tutors = $conn->prepare("SELECT * FROM `tutors`");
-         $select_tutors->execute();
+         $select_tutors = $conn->prepare("SELECT * FROM `tutors` WHERE profession = ?");
+         $select_tutors->execute(["teacher"]);
          if($select_tutors->rowCount() > 0){
             while($fetch_tutor = $select_tutors->fetch(PDO::FETCH_ASSOC)){
 

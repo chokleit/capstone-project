@@ -11,15 +11,22 @@ if(isset($_POST['submit'])){
 
    $select_tutor = $conn->prepare("SELECT * FROM `tutors` WHERE email = ? AND password = ? LIMIT 1");
    $select_tutor->execute([$email, $pass]);
-   $row = $select_tutor->fetch(PDO::FETCH_ASSOC);
-   
-   if($select_tutor->rowCount() > 0){
-     setcookie('tutor_id', $row['id'], time() + 60*60*24*30, '/');
-     header('location:dashboard.php');
-   }else{
-      $message[] = 'incorrect email or password!';
-   }
 
+   $row = $select_tutor->fetch(PDO::FETCH_ASSOC);
+   if($select_tutor->rowCount() > 0) {
+     
+         $cookie_duration = time() + 60 * 60 * 24 * 30;
+         if ($row['profession'] == "admin") {
+            setcookie('tutor_id', $row['id'], $cookie_duration, '/', '', false, true); 
+            header('location:dashboard.php');
+         } else {
+            setcookie('tutor_id', $row['id'], $cookie_duration, '/', '', false, true); 
+            header('location:../teacher/dashboard.php');
+         }
+         exit(); 
+      } else {
+         $message[] = 'Incorrect email or password!';
+}
 }
 
 ?>

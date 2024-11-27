@@ -29,6 +29,11 @@ if(isset($_POST['submit'])){
    $pass = filter_var($pass, FILTER_SANITIZE_STRING);
    $cpass = sha1($_POST['cpass']);
    $cpass = filter_var($cpass, FILTER_SANITIZE_STRING);
+   $gender = $_POST['gender'];
+   $gender = filter_var($gender, FILTER_SANITIZE_STRING);
+   $contactnum = $_POST['contactnum'];
+   $contactnum = filter_var($contactnum, FILTER_SANITIZE_STRING);
+
 
    $image = $_FILES['image']['name'];
    $image = filter_var($image, FILTER_SANITIZE_STRING);
@@ -105,7 +110,7 @@ if(isset($message)){
          <div class="col">
          <h2 class="hidden">Personal Information</h2>
             <p>Middle Name<span>*</span></p>
-            <input type="text" name="mname" placeholder="enter middle name" maxlength="20" required class="box">
+            <input type="text" name="mname" placeholder="enter middle name" maxlength="20" class="box">
             <p class="hidden"><span></span></p>
             <input type="text" name="none" placeholder="" maxlength="20" class="hidden">
          </div>
