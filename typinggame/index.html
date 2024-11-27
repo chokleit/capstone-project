@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <title>Typing Speed Game</title>
+    <meta name="description" content="" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css"/>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div class="container">
+      <h2>Typing Speed Game</h2>
+      <small>Type the word:</small>
+      <h1 id="word"></h1>
+      <input
+        type="text"
+        id="text"
+        autocomplete="off"
+        placeholder="Type here..."
+      />
+      <p class="time-container">Time Left : <span id="time">12s</span></p>
+      <p id="score-container" class="score-container">
+        Score: <span id="score">0</span>
+      </p>
+      <div id="end-game-container" class="end-game-container"></div>
+    </div>
+    <script src="script.js" async defer></script>
+  </body>
+</html>
