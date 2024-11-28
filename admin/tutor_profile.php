@@ -2,18 +2,17 @@
 
 include '../components/connect.php';
 
-if(isset($_COOKIE['user_id'])){
-   $user_id = $_COOKIE['user_id'];
+if(isset($_GET['tutor_id'])){
+   $tutor_id = $_GET['tutor_id'];
 }else{
-   $user_id = '';
+   $tutor_id = '';
 }
 
-if(isset($_POST['tutor_fetch'])){
+if(isset($_POST['tutor_fetch']) && $tutor_id){
 
-   $tutor_email = $_POST['tutor_email'];
-   $tutor_email = filter_var($tutor_email, FILTER_SANITIZE_STRING);
-   $select_tutor = $conn->prepare('SELECT * FROM `tutors` WHERE email = ?');
-   $select_tutor->execute([$tutor_email]);
+
+   $select_tutor = $conn->prepare('SELECT * FROM `tutors` WHERE id = ?');
+   $select_tutor->execute([$tutor_id]);
 
    $fetch_tutor = $select_tutor->fetch(PDO::FETCH_ASSOC);
    $tutor_id = $fetch_tutor['id'];
@@ -85,43 +84,27 @@ if(isset($_POST['tutor_fetch'])){
 <!-- teachers profile section ends -->
 
 <section class="courses">
-
-   <h1 class="heading">latest courese</h1>
-
+   <h1 class="heading">Latest Courses</h1>
    <div class="box-container">
-
       <?php
-         $select_courses = $conn->prepare("SELECT * FROM `playlist` WHERE tutor_id = ? AND status = ?");
-         $select_courses->execute([$tutor_id, 'active']);
-         if($select_courses->rowCount() > 0){
-            while($fetch_course = $select_courses->fetch(PDO::FETCH_ASSOC)){
-               $course_id = $fetch_course['id'];
-
-               $select_tutor = $conn->prepare("SELECT * FROM `tutors` WHERE id = ?");
-               $select_tutor->execute([$fetch_course['tutor_id']]);
-               $fetch_tutor = $select_tutor->fetch(PDO::FETCH_ASSOC);
+      $select_courses = $conn->prepare("SELECT course_id, title, thumb, date FROM `playlist` WHERE tutor_id = ? AND status = ?");
+      $select_courses->execute([$fetch_tutor['id'], 'active']);
+      if ($select_courses->rowCount() > 0):
+         while ($fetch_course = $select_courses->fetch(PDO::FETCH_ASSOC)):
       ?>
       <div class="box">
-         <div class="tutor">
-            <img src="uploaded_files/<?= $fetch_tutor['image']; ?>" alt="">
-            <div>
-               <h3><?= $fetch_tutor['name']; ?></h3>
-               <span><?= $fetch_course['date']; ?></span>
-            </div>
-         </div>
-         <img src="uploaded_files/<?= $fetch_course['thumb']; ?>" class="thumb" alt="">
-         <h3 class="title"><?= $fetch_course['title']; ?></h3>
-         <a href="playlist.php?get_id=<?= $course_id; ?>" class="inline-btn">view playlist</a>
+
+         <img src="uploaded_files/<?= htmlspecialchars($fetch_course['thumb']); ?>" class="thumb" alt="Course Thumbnail">
+         <h3 class="title"><?= htmlspecialchars($fetch_course['title']); ?></h3>
+         <a href="playlist.php?get_id=<?= htmlspecialchars($fetch_course['course_id']); ?>" class="inline-btn">View Playlist</a>
       </div>
       <?php
-         }
-      }else{
-         echo '<p class="empty">no courses added yet!</p>';
-      }
+         endwhile;
+      else:
+         echo '<p class="empty">No courses added yet!</p>';
+      endif;
       ?>
-
    </div>
-
 </section>
 
 <!-- courses section ends -->

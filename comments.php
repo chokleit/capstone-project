@@ -146,7 +146,7 @@ if(isset($_POST['update_now'])){
 
 
 
-<?php include 'components/footer.php'; ?>
+<!-- <?php include 'components/footer.php'; ?> -->
 
 <!-- custom js file link  -->
 <script src="js/script.js"></script>

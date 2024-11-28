@@ -9,6 +9,10 @@ if(isset($message)){
       ';
    }
 }
+
+if(isset($_COOKIE['tutor_id'])){
+   $tutor_id = $_COOKIE['tutor_id'];
+}
 ?>
 
 <header class="header">
